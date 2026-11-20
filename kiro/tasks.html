@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tasks — Kiro Dashboard</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f1117;
+      color: #e8eaf0;
+      min-height: 100vh;
+      padding: 32px 20px 60px;
+    }
+
+    .wrapper { max-width: 860px; margin: 0 auto; }
+
+    /* ---- BACK LINK ---- */
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #8b8fa8;
+      text-decoration: none;
+      font-size: 13px;
+      margin-bottom: 24px;
+      transition: color 0.15s;
+    }
+    .back-link:hover { color: #6c63ff; }
+
+    /* ---- PAGE HEADER ---- */
+    .page-header { margin-bottom: 28px; }
+    .page-header h1 { font-size: 26px; font-weight: 700; color: #e8eaf0; margin-bottom: 6px; }
+    .page-header p  { color: #8b8fa8; font-size: 14px; }
+
+    /* ---- RUNNING BANNER ---- */
+    .running-banner {
+      background: rgba(108,99,255,0.1);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 10px;
+      padding: 12px 18px;
+      margin-bottom: 20px;
+      font-size: 13px;
+      color: #a8a4ff;
+      display: none;
+      align-items: center;
+      gap: 10px;
+    }
+    .running-banner.visible { display: flex; }
+    .running-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: #6c63ff; flex-shrink: 0;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:.4; transform:scale(.7); }
+    }
+    .running-banner strong { color: #c4c0ff; }
+
+    /* ---- SUMMARY BAR ---- */
+    .summary-bar {
+      background: #1e2130;
+      border: 1px solid #2a2d3e;
+      border-radius: 14px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    .summary-counts { display: flex; gap: 24px; flex-wrap: wrap; }
+    .summary-stat { text-align: center; }
+    .summary-stat .num { font-size: 28px; font-weight: 700; line-height: 1; }
+    .summary-stat .num.done-num  { color: #4ade80; }
+    .summary-stat .num.run-num   { color: #6c63ff; }
+    .summary-stat .num.total-num { color: #8b8fa8; }
+    .summary-stat .lbl { font-size: 12px; color: #555870; margin-top: 3px; }
+    .summary-progress { flex: 1; min-width: 160px; }
+    .progress-track {
+      background: #2a2d3e; border-radius: 50px;
+      height: 8px; overflow: hidden; margin-bottom: 6px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #6c63ff, #4ade80);
+      border-radius: 50px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+    .progress-label { font-size: 12px; color: #8b8fa8; text-align: right; }
+
+    /* ---- TOOLBAR ---- */
+    .toolbar { display: flex; justify-content: flex-end; margin-bottom: 16px; }
+    .btn-reset-all {
+      background: #1e2130; border: 1px solid #2a2d3e;
+      color: #8b8fa8; border-radius: 8px;
+      padding: 7px 16px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s; font-family: inherit;
+    }
+    .btn-reset-all:hover { color: #f87171; border-color: #f87171; }
+
+    /* ---- PHASE BLOCK ---- */
+    .phase {
+      margin-bottom: 16px;
+      border: 1px solid #2a2d3e;
+      border-radius: 14px;
+      overflow: hidden;
+    }
+
+    .phase-header {
+      background: #1a1d27;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      user-select: none;
+      gap: 12px;
+    }
+    .phase-header:hover { background: #1e2130; }
+
+    .phase-title {
+      font-size: 14px; font-weight: 600; color: #e8eaf0;
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .phase-badge {
+      font-size: 11px; font-weight: 600;
+      padding: 2px 10px; border-radius: 50px;
+      background: #2a2d3e; color: #8b8fa8;
+    }
+    .phase-badge.complete { background: rgba(74,222,128,.15); color: #4ade80; }
+    .phase-badge.partial  { background: rgba(108,99,255,.15); color: #6c63ff; }
+
+    .phase-right { display: flex; align-items: center; gap: 10px; }
+
+    /* ---- PHASE START BUTTON ---- */
+    .btn-phase-start {
+      font-size: 12px; font-weight: 700;
+      padding: 6px 16px; border-radius: 50px;
+      border: none; cursor: pointer;
+      transition: all 0.15s; white-space: nowrap;
+      font-family: inherit;
+    }
+    .btn-phase-start.idle    { background: #6c63ff; color: #fff; }
+    .btn-phase-start.idle:hover { background: #574fd6; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(108,99,255,.4); }
+    .btn-phase-start.idle:active { transform: translateY(0); }
+    .btn-phase-start.running { background: rgba(108,99,255,.18); color: #a8a4ff; border: 1px solid rgba(108,99,255,.3); cursor: default; }
+    .btn-phase-start.done    { background: rgba(74,222,128,.12); color: #4ade80;  border: 1px solid rgba(74,222,128,.25);  cursor: default; }
+
+    .phase-chevron { color: #555870; font-size: 12px; transition: transform 0.2s; }
+    .phase.open .phase-chevron { transform: rotate(180deg); }
+
+    .phase-body { display: none; padding: 6px 0; background: #1e2130; }
+    .phase.open .phase-body { display: block; }
+
+    /* ---- TASK ROW ---- */
+    .task-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 20px;
+      border-bottom: 1px solid #252840;
+      transition: background 0.15s;
+    }
+    .task-row:last-child { border-bottom: none; }
+    .task-row:hover { background: #252840; }
+
+    .task-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      flex-shrink: 0; background: #2a2d3e;
+      border: 2px solid #33364a; transition: all 0.2s;
+    }
+    .task-row[data-status="done"]    .task-dot { background: #4ade80; border-color: #4ade80; }
+    .task-row[data-status="running"] .task-dot { background: #6c63ff; border-color: #6c63ff; box-shadow: 0 0 6px rgba(108,99,255,.6); animation: pulse 1.2s ease-in-out infinite; }
+
+    .task-id { font-size: 11px; color: #555870; font-family: monospace; min-width: 36px; }
+
+    .task-text { flex: 1; font-size: 14px; color: #e8eaf0; line-height: 1.4; }
+    .task-row[data-status="done"] .task-text { text-decoration: line-through; color: #555870; }
+
+    .task-status-label {
+      font-size: 11px; font-weight: 600;
+      padding: 3px 10px; border-radius: 50px;
+      min-width: 72px; text-align: center; flex-shrink: 0;
+    }
+    .task-row[data-status="idle"]    .task-status-label { background: #2a2d3e; color: #555870; }
+    .task-row[data-status="running"] .task-status-label { background: rgba(108,99,255,.18); color: #6c63ff; }
+    .task-row[data-status="done"]    .task-status-label { background: rgba(74,222,128,.12); color: #4ade80; }
+
+    /* ---- TASK BUTTONS ---- */
+    .task-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+    .btn {
+      border: none; border-radius: 7px; font-family: inherit;
+      font-size: 12px; font-weight: 600; padding: 5px 12px;
+      cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    }
+    .btn-start         { background: #6c63ff; color: #fff; }
+    .btn-start:hover   { background: #574fd6; }
+    .btn-start:disabled { background: #2a2d3e; color: #555870; cursor: not-allowed; }
+
+    .btn-done          { background: rgba(74,222,128,.15); color: #4ade80; border: 1px solid rgba(74,222,128,.25); }
+    .btn-done:hover    { background: rgba(74,222,128,.28); }
+
+    .btn-reset         { background: #1a1d27; color: #8b8fa8; border: 1px solid #2a2d3e; }
+    .btn-reset:hover   { color: #f87171; border-color: #f87171; }
+
+    /* ---- TOAST ---- */
+    .toast {
+      position: fixed; bottom: 28px; right: 28px;
+      background: #1e2130; border: 1px solid #2a2d3e;
+      color: #e8eaf0; padding: 11px 18px;
+      border-radius: 9px; font-size: 13px;
+      box-shadow: 0 4px 24px rgba(0,0,0,.5);
+      z-index: 999; transform: translateY(60px); opacity: 0;
+      transition: all 0.3s ease; pointer-events: none;
+    }
+    .toast.show   { transform: translateY(0); opacity: 1; }
+    .toast.green  { border-left: 3px solid #4ade80; }
+    .toast.purple { border-left: 3px solid #6c63ff; }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <a href="../index.html" class="back-link">← Back to Dashboard</a>
+
+  <div class="page-header">
+    <h1>📋 Tasks — Kiro Dashboard</h1>
+    <p>Klik <strong>▶ Start Phase</strong> untuk menjalankan semua task dalam phase sekaligus, atau klik <strong>▶ Start</strong> pada task individual.</p>
+  </div>
+
+  <div id="running-banner" class="running-banner">
+    <div class="running-dot"></div>
+    <span>Running: <strong id="running-label">—</strong></span>
+  </div>
+
+  <div class="summary-bar">
+    <div class="summary-counts">
+      <div class="summary-stat">
+        <div class="num done-num"  id="count-done">0</div>
+        <div class="lbl">Done</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num run-num"   id="count-running">0</div>
+        <div class="lbl">Running</div>
+      </div>
+      <div class="summary-stat">
+        <div class="num total-num" id="count-total">0</div>
+        <div class="lbl">Total</div>
+      </div>
+    </div>
+    <div class="summary-progress">
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-label" id="progress-label">0%</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <button class="btn-reset-all" onclick="resetAll()">↺ Reset All</button>
+  </div>
+
+  <div id="phases-container"></div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script>
+// ================================================================
+// DATA
+// ================================================================
+const PHASES = [
+  {
+    id: "phase-1",
+    name: "Phase 1 — Project Setup",
+    tasks: [
+      { id: "1-1", task: "Create folder structure (css/, js/, Kiro/)" },
+      { id: "1-2", task: "Create index.html base template" },
+      { id: "1-3", task: "Create css/style.css" },
+      { id: "1-4", task: "Create js/app.js" },
+      { id: "1-5", task: "Link CSS and JS in HTML" }
+    ]
+  },
+  {
+    id: "phase-2",
+    name: "Phase 2 — Core Features",
+    tasks: [
+      { id: "2-1",  task: "Display live clock (HH:MM:SS), updates every second" },
+      { id: "2-2",  task: "Display current date (Day, Month Date, Year)" },
+      { id: "2-3",  task: "Show greeting phrase based on time of day" },
+      { id: "2-4",  task: "Render default 25-minute countdown" },
+      { id: "2-5",  task: "Start button — begins countdown" },
+      { id: "2-6",  task: "Pause button — pauses countdown" },
+      { id: "2-7",  task: "Reset button — restores to full duration" },
+      { id: "2-8",  task: "Progress bar synced to remaining time" },
+      { id: "2-9",  task: "Status text (Focusing / Paused / Complete)" },
+      { id: "2-10", task: "Audio beep on session complete" },
+      { id: "2-11", task: "Add task via input + button (or Enter key)" },
+      { id: "2-12", task: "Render task list from Local Storage on load" },
+      { id: "2-13", task: "Mark task as done (toggle checkbox)" },
+      { id: "2-14", task: "Edit task inline" },
+      { id: "2-15", task: "Delete task" },
+      { id: "2-16", task: "Save all changes to Local Storage" },
+      { id: "2-17", task: "Show completion count in footer" },
+      { id: "2-18", task: "Render link tiles from Local Storage on load" },
+      { id: "2-19", task: "Pre-load 3 default links on first visit" },
+      { id: "2-20", task: "Open links in new tab" },
+      { id: "2-21", task: "Delete link on hover" },
+      { id: "2-22", task: "Add new link via label + URL form" },
+      { id: "2-23", task: "Auto-prepend https:// if missing" },
+      { id: "2-24", task: "Save links to Local Storage" },
+      { id: "2-25", task: "Load favicon via Google S2 API" }
+    ]
+  },
+  {
+    id: "phase-3",
+    name: "Phase 3 — Challenges",
+    tasks: [
+      { id: "3-1",  task: "CSS custom properties for both themes" },
+      { id: "3-2",  task: "data-theme attribute toggle on <html>" },
+      { id: "3-3",  task: "Theme toggle button in top bar" },
+      { id: "3-4",  task: "Button label updates to reflect current theme" },
+      { id: "3-5",  task: "Save selected theme to Local Storage" },
+      { id: "3-6",  task: "Display name below greeting phrase" },
+      { id: "3-7",  task: "Edit button opens inline name form" },
+      { id: "3-8",  task: "Save button writes name to Local Storage" },
+      { id: "3-9",  task: "Enter key submits the name form" },
+      { id: "3-10", task: "Name persists on page reload" },
+      { id: "3-11", task: "Number input for custom minutes (1–180)" },
+      { id: "3-12", task: "Apply button updates timer duration" },
+      { id: "3-13", task: "Timer resets to new duration immediately" },
+      { id: "3-14", task: "Custom duration saved to Local Storage" },
+      { id: "3-15", task: "Input pre-filled with saved duration on load" },
+      { id: "3-16", task: "Case-insensitive duplicate check on add" },
+      { id: "3-17", task: "Case-insensitive duplicate check on edit" },
+      { id: "3-18", task: "Inline warning message shown on duplicate add" },
+      { id: "3-19", task: "Toast shown on duplicate edit attempt" },
+      { id: "3-20", task: "Sort dropdown in To-Do card header" },
+      { id: "3-21", task: "Sort options: Default, A→Z, Z→A, Undone first, Done first" },
+      { id: "3-22", task: "Re-renders list on sort change without modifying saved order" }
+    ]
+  },
+  {
+    id: "phase-4",
+    name: "Phase 4 — Polish & Quality",
+    tasks: [
+      { id: "4-1", task: "Toast notification system (success + warning types)" },
+      { id: "4-2", task: "HTML special character escaping for user input" },
+      { id: "4-3", task: "Responsive layout (single column on mobile)" },
+      { id: "4-4", task: "Custom scrollbar on task list" },
+      { id: "4-5", task: "Smooth transitions on theme switch" },
+      { id: "4-6", task: "Hover effects on all interactive elements" }
+    ]
+  },
+  {
+    id: "phase-5",
+    name: "Phase 5 — Deployment",
+    tasks: [
+      { id: "5-1", task: "Initialize Git repository" },
+      { id: "5-2", task: "Create GitHub repository" },
+      { id: "5-3", task: "Push code with GitHub Desktop" },
+      { id: "5-4", task: "Enable GitHub Pages (branch: main, root: /)" },
+      { id: "5-5", task: "Verify live URL works correctly" }
+    ]
+  }
+];
+
+const DEFAULT_DONE = new Set([
+  "1-1","1-2","1-3","1-4","1-5",
+  "2-1","2-2","2-3","2-4","2-5","2-6","2-7","2-8","2-9","2-10",
+  "2-11","2-12","2-13","2-14","2-15","2-16","2-17",
+  "2-18","2-19","2-20","2-21","2-22","2-23","2-24","2-25",
+  "3-1","3-2","3-3","3-4","3-5","3-6","3-7","3-8","3-9","3-10",
+  "3-11","3-12","3-13","3-14","3-15","3-16","3-17","3-18","3-19",
+  "3-20","3-21","3-22",
+  "4-1","4-2","4-3","4-4","4-5","4-6"
+]);
+
+// ================================================================
+// STATE
+// ================================================================
+const LS_KEY = 'kiro_task_states';
+
+function loadState() {
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; }
+  catch { return {}; }
+}
+
+function saveState(state) {
+  localStorage.setItem(LS_KEY, JSON.stringify(state));
+}
+
+function getStatus(id, state) {
+  if (state[id]) return state[id];
+  if (DEFAULT_DONE.has(id)) return 'done';
+  return 'idle';
+}
+
+// ================================================================
+// RENDER
+// ================================================================
+function render() {
+  const state = loadState();
+  const container = document.getElementById('phases-container');
+  container.innerHTML = '';
+
+  PHASES.forEach(phase => {
+    const total   = phase.tasks.length;
+    const done    = phase.tasks.filter(t => getStatus(t.id, state) === 'done').length;
+    const running = phase.tasks.filter(t => getStatus(t.id, state) === 'running').length;
+    const idle    = phase.tasks.filter(t => getStatus(t.id, state) === 'idle').length;
+
+    // Badge
+    let badgeClass = done === total ? 'complete' : done > 0 || running > 0 ? 'partial' : '';
+    let badgeText  = `${done}/${total}`;
+
+    // Phase Start button state
+    let btnClass, btnLabel, btnDisabled;
+    if (done === total) {
+      btnClass = 'done'; btnLabel = '✓ Complete'; btnDisabled = true;
+    } else if (running > 0 && idle === 0) {
+      btnClass = 'running'; btnLabel = '● Running…'; btnDisabled = true;
+    } else {
+      btnClass = 'idle'; btnLabel = '▶ Start Phase'; btnDisabled = false;
+    }
+
+    const isOpen = done < total || running > 0;
+
+    const phaseEl = document.createElement('div');
+    phaseEl.className = 'phase' + (isOpen ? ' open' : '');
+    phaseEl.id = phase.id;
+
+    // Header
+    const header = document.createElement('div');
+    header.className = 'phase-header';
+    header.innerHTML = `
+      <span class="phase-title">
+        ${phase.name}
+        <span class="phase-badge ${badgeClass}">${badgeText}</span>
+      </span>
+      <div class="phase-right">
+        <button class="btn-phase-start ${btnClass}"
+          ${btnDisabled ? 'disabled' : ''}
+          data-phase="${phase.id}">
+          ${btnLabel}
+        </button>
+        <span class="phase-chevron">▼</span>
+      </div>
+    `;
+
+    // Toggle collapse on header click (not on button)
+    header.addEventListener('click', e => {
+      if (e.target.closest('.btn-phase-start')) return;
+      phaseEl.classList.toggle('open');
+    });
+
+    // Start Phase button click
+    header.querySelector('.btn-phase-start').addEventListener('click', e => {
+      e.stopPropagation();
+      startPhase(phase.id);
+    });
+
+    // Body — task rows
+    const body = document.createElement('div');
+    body.className = 'phase-body';
+
+    phase.tasks.forEach(t => {
+      const status = getStatus(t.id, state);
+      const labels = { idle: 'Idle', running: 'Running…', done: 'Done' };
+
+      const row = document.createElement('div');
+      row.className = 'task-row';
+      row.dataset.status = status;
+      row.id = 'row-' + t.id;
+
+      row.innerHTML = `
+        <div class="task-dot"></div>
+        <span class="task-id">#${t.id}</span>
+        <span class="task-text">${escHtml(t.task)}</span>
+        <span class="task-status-label">${labels[status]}</span>
+        <div class="task-actions">
+          <button class="btn btn-start"
+            ${status === 'done' ? 'disabled' : ''}
+            data-action="start" data-id="${t.id}">
+            ${status === 'running' ? '● Running' : '▶ Start'}
+          </button>
+          <button class="btn btn-done"
+            style="${status !== 'running' ? 'display:none' : ''}"
+            data-action="done" data-id="${t.id}">
+            ✓ Done
+          </button>
+          <button class="btn btn-reset"
+            style="${status === 'idle' ? 'display:none' : ''}"
+            data-action="reset" data-id="${t.id}">
+            ↺
+          </button>
+        </div>
+      `;
+      body.appendChild(row);
+    });
+
+    // Event delegation for task buttons
+    body.addEventListener('click', e => {
+      const btn = e.target.closest('[data-action]');
+      if (!btn) return;
+      const id     = btn.dataset.id;
+      const action = btn.dataset.action;
+      if (action === 'start') startTask(id);
+      if (action === 'done')  doneTask(id);
+      if (action === 'reset') resetTask(id);
+    });
+
+    phaseEl.appendChild(header);
+    phaseEl.appendChild(body);
+    container.appendChild(phaseEl);
+  });
+
+  updateSummary(state);
+  updateRunningBanner(state);
+}
+
+// ================================================================
+// ACTIONS
+// ================================================================
+
+// Start ALL idle tasks in a phase at once
+function startPhase(phaseId) {
+  const state = loadState();
+  const phase = PHASES.find(p => p.id === phaseId);
+  if (!phase) return;
+
+  const idleTasks = phase.tasks.filter(t => getStatus(t.id, state) === 'idle');
+  if (idleTasks.length === 0) {
+    showToast('Semua task di phase ini sudah selesai.', 'green');
+    return;
+  }
+
+  idleTasks.forEach(t => { state[t.id] = 'running'; });
+  saveState(state);
+  render();
+
+  // Buka phase dan scroll ke sana
+  const phaseEl = document.getElementById(phaseId);
+  if (phaseEl) {
+    phaseEl.classList.add('open');
+    phaseEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  showToast(`▶ Phase dimulai — ${idleTasks.length} task running`, 'purple');
+}
+
+// Start satu task individual
+function startTask(id) {
+  const state = loadState();
+  if (getStatus(id, state) === 'running') return;
+  state[id] = 'running';
+  saveState(state);
+  render();
+  showToast(`▶ Task #${id} dimulai`, 'purple');
+}
+
+function doneTask(id) {
+  const state = loadState();
+  state[id] = 'done';
+  saveState(state);
+  render();
+  showToast(`✓ Task #${id} selesai`, 'green');
+}
+
+function resetTask(id) {
+  const state = loadState();
+  delete state[id];
+  saveState(state);
+  render();
+}
+
+function resetAll() {
+  if (!confirm('Reset semua status task ke default?')) return;
+  localStorage.removeItem(LS_KEY);
+  render();
+  showToast('Semua status direset.', 'purple');
+}
+
+// ================================================================
+// SUMMARY & BANNER
+// ================================================================
+function updateSummary(state) {
+  let total = 0, done = 0, running = 0;
+  PHASES.forEach(p => p.tasks.forEach(t => {
+    total++;
+    const s = getStatus(t.id, state);
+    if (s === 'done')    done++;
+    if (s === 'running') running++;
+  }));
+
+  document.getElementById('count-total').textContent   = total;
+  document.getElementById('count-done').textContent    = done;
+  document.getElementById('count-running').textContent = running;
+
+  const pct = Math.round((done / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-label').textContent = pct + '% complete';
+}
+
+function updateRunningBanner(state) {
+  const banner = document.getElementById('running-banner');
+  const lbl    = document.getElementById('running-label');
+
+  const runningTasks = [];
+  PHASES.forEach(p => p.tasks.forEach(t => {
+    if (getStatus(t.id, state) === 'running') runningTasks.push(t);
+  }));
+
+  if (runningTasks.length > 0) {
+    lbl.textContent = runningTasks.length === 1
+      ? `#${runningTasks[0].id} — ${runningTasks[0].task}`
+      : `${runningTasks.length} tasks sedang berjalan`;
+    banner.classList.add('visible');
+  } else {
+    banner.classList.remove('visible');
+  }
+}
+
+// ================================================================
+// HELPERS
+// ================================================================
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function showToast(msg, type = 'green') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast ${type} show`;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => { t.className = 'toast'; }, 2600);
+}
+
+// ================================================================
+// INIT
+// ================================================================
+render();
+</script>
+</body>
+</html>

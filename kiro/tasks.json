@@ -1,0 +1,98 @@
+{
+  "project": "Kiro Dashboard",
+  "phases": [
+    {
+      "id": "phase-1",
+      "name": "Project Setup",
+      "tasks": [
+        { "id": "1-1", "task": "Create folder structure (css/, js/, Kiro/)", "done": true },
+        { "id": "1-2", "task": "Create index.html base template", "done": true },
+        { "id": "1-3", "task": "Create css/style.css", "done": true },
+        { "id": "1-4", "task": "Create js/app.js", "done": true },
+        { "id": "1-5", "task": "Link CSS and JS in HTML", "done": true }
+      ]
+    },
+    {
+      "id": "phase-2",
+      "name": "Core Features",
+      "tasks": [
+        { "id": "2-1",  "task": "Display live clock (HH:MM:SS), updates every second", "done": true },
+        { "id": "2-2",  "task": "Display current date (Day, Month Date, Year)", "done": true },
+        { "id": "2-3",  "task": "Show greeting phrase based on time of day", "done": true },
+        { "id": "2-4",  "task": "Render default 25-minute countdown", "done": true },
+        { "id": "2-5",  "task": "Start button — begins countdown", "done": true },
+        { "id": "2-6",  "task": "Pause button — pauses countdown", "done": true },
+        { "id": "2-7",  "task": "Reset button — restores to full duration", "done": true },
+        { "id": "2-8",  "task": "Progress bar synced to remaining time", "done": true },
+        { "id": "2-9",  "task": "Status text (Focusing / Paused / Complete)", "done": true },
+        { "id": "2-10", "task": "Audio beep on session complete", "done": true },
+        { "id": "2-11", "task": "Add task via input + button (or Enter key)", "done": true },
+        { "id": "2-12", "task": "Render task list from Local Storage on load", "done": true },
+        { "id": "2-13", "task": "Mark task as done (toggle checkbox)", "done": true },
+        { "id": "2-14", "task": "Edit task inline", "done": true },
+        { "id": "2-15", "task": "Delete task", "done": true },
+        { "id": "2-16", "task": "Save all changes to Local Storage", "done": true },
+        { "id": "2-17", "task": "Show completion count in footer", "done": true },
+        { "id": "2-18", "task": "Render link tiles from Local Storage on load", "done": true },
+        { "id": "2-19", "task": "Pre-load 3 default links on first visit", "done": true },
+        { "id": "2-20", "task": "Open links in new tab", "done": true },
+        { "id": "2-21", "task": "Delete link on hover", "done": true },
+        { "id": "2-22", "task": "Add new link via label + URL form", "done": true },
+        { "id": "2-23", "task": "Auto-prepend https:// if missing", "done": true },
+        { "id": "2-24", "task": "Save links to Local Storage", "done": true },
+        { "id": "2-25", "task": "Load favicon via Google S2 API", "done": true }
+      ]
+    },
+    {
+      "id": "phase-3",
+      "name": "Challenges",
+      "tasks": [
+        { "id": "3-1",  "task": "CSS custom properties for both themes", "done": true },
+        { "id": "3-2",  "task": "data-theme attribute toggle on <html>", "done": true },
+        { "id": "3-3",  "task": "Theme toggle button in top bar", "done": true },
+        { "id": "3-4",  "task": "Button label updates to reflect current theme", "done": true },
+        { "id": "3-5",  "task": "Save selected theme to Local Storage", "done": true },
+        { "id": "3-6",  "task": "Display name below greeting phrase", "done": true },
+        { "id": "3-7",  "task": "Edit button opens inline name form", "done": true },
+        { "id": "3-8",  "task": "Save button writes name to Local Storage", "done": true },
+        { "id": "3-9",  "task": "Enter key submits the name form", "done": true },
+        { "id": "3-10", "task": "Name persists on page reload", "done": true },
+        { "id": "3-11", "task": "Number input for custom minutes (1–180)", "done": true },
+        { "id": "3-12", "task": "Apply button updates timer duration", "done": true },
+        { "id": "3-13", "task": "Timer resets to new duration immediately", "done": true },
+        { "id": "3-14", "task": "Custom duration saved to Local Storage", "done": true },
+        { "id": "3-15", "task": "Input pre-filled with saved duration on load", "done": true },
+        { "id": "3-16", "task": "Case-insensitive duplicate check on add", "done": true },
+        { "id": "3-17", "task": "Case-insensitive duplicate check on edit", "done": true },
+        { "id": "3-18", "task": "Inline warning message shown on duplicate add", "done": true },
+        { "id": "3-19", "task": "Toast shown on duplicate edit attempt", "done": true },
+        { "id": "3-20", "task": "Sort dropdown in To-Do card header", "done": true },
+        { "id": "3-21", "task": "Sort options: Default, A→Z, Z→A, Undone first, Done first", "done": true },
+        { "id": "3-22", "task": "Re-renders list on sort change without modifying saved order", "done": true }
+      ]
+    },
+    {
+      "id": "phase-4",
+      "name": "Polish & Quality",
+      "tasks": [
+        { "id": "4-1", "task": "Toast notification system (success + warning types)", "done": true },
+        { "id": "4-2", "task": "HTML special character escaping for user input", "done": true },
+        { "id": "4-3", "task": "Responsive layout (single column on mobile)", "done": true },
+        { "id": "4-4", "task": "Custom scrollbar on task list", "done": true },
+        { "id": "4-5", "task": "Smooth transitions on theme switch", "done": true },
+        { "id": "4-6", "task": "Hover effects on all interactive elements", "done": true }
+      ]
+    },
+    {
+      "id": "phase-5",
+      "name": "Deployment",
+      "tasks": [
+        { "id": "5-1", "task": "Initialize Git repository", "done": false },
+        { "id": "5-2", "task": "Create GitHub repository", "done": false },
+        { "id": "5-3", "task": "Push code with GitHub Desktop", "done": false },
+        { "id": "5-4", "task": "Enable GitHub Pages (branch: main, root: /)", "done": false },
+        { "id": "5-5", "task": "Verify live URL works correctly", "done": false }
+      ]
+    }
+  ]
+}
